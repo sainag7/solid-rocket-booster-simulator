@@ -1,9 +1,9 @@
 # Solid Rocket Booster Explorer
 
-Checkpoints 1 and 2 are implemented: a browser-independent TypeScript physics
-library, RASP importer, deterministic command-line demo, and a React chart view
-of a fixed C6 reference flight. Editable controls, the preset catalog, exports,
-animation, and stability belong to later checkpoints in [starter.md](starter.md).
+The browser-independent TypeScript physics library, RASP importer, interactive
+flight lab, A–O real motor presets, illustrative grain profiles, and 3D launch
+playback are implemented. Import UI, exports, and stability remain future work
+in [starter.md](starter.md).
 
 ## Run
 
@@ -26,27 +26,154 @@ declarations, and source maps into `dist/`. Vite emits the website separately in
 bundled C6 fixture and prints its configuration and results. Simulation and
 preference state stay in memory; the client fetches no motor data or external fonts.
 
-## Chart view
+## Interactive flight lab
 
-The React 18 / Vite / Tailwind / Recharts interface uses the same measured C6
-fixture and 70.9 g reference airframe as the headless demo. Configuration is
-read-only for checkpoint 2. All three plots share a numeric 0–7 s time axis and
-aligned plot bounds, with synchronized hover/keyboard tooltips:
+Open the HTTP address printed by `npm run dev`, rather than opening `index.html`
+with `file://`; Vite compiles the TypeScript and serves the worker. The React 18 /
+Vite / Tailwind / Zustand / Recharts interface begins with the same measured C6
+fixture and 70.9 g reference airframe as the headless demo. The controls are on
+the left on desktop and above the charts below 900 px. All plots share a numeric
+time axis and aligned bounds, with synchronized hover/keyboard tooltips:
 
-- Thrust versus time, with the area shaded and integrated impulse annotated.
+- Thrust versus time, with the area shaded and integrated impulse annotated;
+  dashed cumulative impulse uses the labeled right axis in N·s.
 - Altitude versus time, with burnout and apogee markers.
 - Velocity and net acceleration versus time, with separately labeled axes and a
   dashed acceleration line to distinguish it without relying on color alone.
 
-The view preserves all 6,405 physics/event samples, including the ignition peak.
-The simulation runs once when the reference module loads. A light/dark toggle
-uses memory only; its initial setting follows the system preference. The layout
-stacks below 900 px. Fonts are bundled locally. Presentation code lives in `web/`
-and is checked separately, leaving the physics build free of browser types.
+Choose an A–O class, adjust logarithmic impulse/thrust sliders or enter numbers,
+and select a grain profile or neutral, progressive, or regressive basic thrust.
+Changing class loads a sourced motor and a matching example airframe. Impulse,
+thrust, grain, and basic-shape edits use a synthesized teaching curve. A selected
+grain profile remains active across class changes, using the new preset's impulse
+and duration. Airframe and mass edits keep the current curve and mark the
+configuration modified. “Reset to C6” restores all reference settings.
 
-The chart-data tests check unit conversion, event retention, the thrust peak,
-and finite, legible axis ranges. Responsive layout and keyboard support are
-implemented; browser interaction and visual QA have not been performed.
+With **Hold total impulse constant** on, thrust changes keep impulse fixed and
+change duration. With it off, thrust and impulse change together at fixed duration,
+limited to the selected class. Explicit impulse edits always keep average thrust
+fixed. Changing class replaces motor dimensions/masses, impulse, average thrust,
+and the example airframe's dimensions/mass. It uses the selected real curve unless
+a grain profile is active. Adjacent motor classes may share casing sizes.
+The default rail follows tier (1.8 / 2.4 m) until explicitly edited.
+
+The UI's minimum impulse is 0.001 N·s above a shared lower boundary (except A),
+preserving the lower-class endpoint rule. Input ranges are displayed below each
+slider. Numeric entries update on valid input; blank/nonfinite entries revert on
+blur, and out-of-range entries clamp on blur. Propellant is capped at 99% of loaded
+motor mass and is reduced if loaded mass is lowered past that limit. Zero propellant
+is supported, with specific impulse shown as unavailable. Motor dimensions are
+drawn to scale in the 3D view; body diameter sets drag in the one-dimensional flight model.
+
+Each edit starts a background Web Worker after a 50 ms debounce. Superseded workers
+are terminated and late results ignored. Integration stays at 0.001 s, with no
+coarser fallback. Previous results remain visibly marked while a calculation is
+pending. Rendering data retain bucket extrema for every plotted channel, exact
+events, and every visible thrust knot; the core's full-resolution samples and
+metrics are unchanged. Partial flights show only the simulated interval and label
+the shaded area as delivered impulse, keeping very long burns from compressing
+the charts. Unreached events appear as dashes; no-liftoff and simulation limits
+have explicit explanations. Static plots are memoized; playback moves a separate cursor without rebuilding the chart series.
+
+Light/dark mode and all configuration state use memory only. Fonts are bundled.
+Presentation code lives in `web/` and is checked separately from the physics build.
+The tests cover state transitions, both slider limits at class O, every class,
+partial/no-liftoff results, event/extrema retention, and finite axis ranges.
+Responsive layout and keyboard support are implemented; browser interaction and
+visual QA have not been performed.
+
+Where `document.modelContext` is supported, `read_flight_configuration`,
+`configure_motor_class`, and `configure_grain_profile` expose the same in-memory
+selection actions as the visible controls. Tool
+definitions and valid/invalid state transitions have unit coverage; registration
+and invocation in an actual supported WebMCP browser context remain unverified.
+
+## 3D launch playback
+
+The launch viewport shows a dimension-driven Three.js rocket with body, nose,
+fins, motor casing, nozzle, launch pad, and rail. Drag to orbit, scroll/pinch to
+zoom, use **Reset camera**, or enable **Motor cutaway** to inspect the casing.
+Body/nose length, nose shape, and fin dimensions/count are editable. Fit problems
+are reported without silently changing the geometry. Geometry does not infer Cd,
+dry mass, stability, or a real kit specification.
+
+**Launch** starts at 1× real time by default. Pause/resume, replay, the 0.25×/1×/4×
+speed selector, the timeline, and the burnout jump share a single playback clock.
+The default **Landscape** camera uses rocket-relative coordinates and pulls back
+to frame both the vehicle and launch pad. An orange line connects the rocket to
+the pad, and a small locator ring identifies the vehicle when its true size becomes
+too small to see. **Rocket close-up** restores the inspection view. Both views
+retain actual metre dimensions; the altitude tape and large height readout report
+the same simulation altitude as the charts.
+
+The field includes textured grass, a dirt clearing, gravel, a road, trees, a
+building, a 30 m water tower, and a 1.8 m observer. A reference tree is 8 m tall.
+Cloud layers are fixed at 750–930 m and 3,000–3,350 m; they are illustrative scenery,
+not weather inputs. A C6 flight remains below them. The sky gradually darkens at
+high altitude, stars fade in above 35 km, and a curved illustrative Earth remains
+beneath the vehicle. The 100 km space reference follows
+[NASA JPL's explanation](https://www.jpl.nasa.gov/edu/resources/lesson-plan/how-far-away-is-space/).
+Scenery never rescales cloud heights or the space threshold to a flight's apogee.
+These visual transitions do not change the existing atmospheric or flight model. The exhaust follows instantaneous
+thrust and stops emitting at burnout; smoke is decorative. No animation starts
+until requested. Hiding the tab pauses playback. Reduced-motion preference removes
+smoke and exhaust flicker. A lost/unavailable WebGL context leaves the timeline,
+telemetry, and charts usable.
+
+The worker returns a dedicated motion stream at approximately 100 Hz, retaining
+all thrust knots, exact events, and its final sample. Motion is interpolated from
+that stream; thrust and cumulative impulse use the exact piecewise-linear curve
+evaluator. The integrator and headless API are unchanged. Rendering runs at the
+display refresh rate, while telemetry and the shared chart cursor update at 20 Hz.
+Configuration edits stop playback at the pad, and Launch stays disabled until
+the matching calculation completes. No-liftoff flights burn on the pad; normal
+flights stop at apogee; partial flights stop at the actual simulation limit.
+Recovery and descent are not simulated.
+
+Real motor inputs are bundled in [web/motor-data.ts](web/motor-data.ts), with
+original RASP comments, source IDs, URLs, and retrieval dates. See
+[motor-sources.md](motor-sources.md) for provenance and the example-airframe rules.
+The default C6 retains its original dimensions, masses, and reference flight.
+
+## Grain profiles and impulse delivery
+
+The grain selector uses six qualitative templates from the user-supplied reference:
+tubular (progressive), rod and tube (neutral), double anchor (regressive), star
+(near-neutral with a shallow dip), multi-fin (boost followed by lower sustain),
+and dual composition (two pulses separated by a low positive-thrust interval).
+Cross-sections are original SVG schematics. They are not dimensional models,
+measurements, or calibrated predictions of real grains or propellant compositions.
+
+Selecting a profile preserves total impulse, average thrust, burn duration, and
+both motor and airframe masses, including when the hold-impulse toggle is off.
+Peak thrust, impulse delivery timing, and flight results can change. Specific
+impulse and average thrust-to-weight remain unchanged for that comparison.
+The hold toggle still governs thrust-slider edits. Class, impulse, and thrust
+edits keep the selected grain profile; selecting a basic shape clears it. When
+class selection loads a new motor preset and example airframe, the selected grain
+is applied to that motor's impulse and average thrust as a synthesized curve.
+Reset restores the measured C6 and clears grain selection because the fixture
+does not identify its grain geometry.
+
+Dimensionless piecewise-linear templates are sampled at 1,001 points, including
+every template knot, ignition, and terminal zero. Each curve is normalized to
+the requested impulse; duration remains `totalImpulse / averageThrust`. This
+models different external thrust schedules without computing internal ballistics,
+burn rate, pressure, chemistry, or geometric burnback.
+
+The dashed cumulative line uses the existing analytical integral within each
+linear thrust segment. Its sampled values are exact; lines between plotted values
+are a visual interpolation. Hover shows thrust, delivered impulse, and delivered
+percentage. The half-burn readout reports the fraction delivered at half the full
+motor burn, even if the flight simulation stops earlier. Partial flights display
+only their integrated time interval and do not fabricate completion of impulse
+delivery. This follows the definition of total impulse as the integral of thrust
+over time ([NASA](https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/specific-impulse/)).
+
+The grain tests cover all six profiles at both ends of every A–O band, normalization
+within 0.1%, cumulative integrals, burnout mass, profile shape, scaling, selection
+and reset behavior, changed flight results, no liftoff, simulation limits, and
+invalid input.
 
 ## Use the core
 
@@ -83,6 +210,11 @@ Public entry points are exported from `src/index.ts`:
 - `generateThrustCurve(request)` returns `Result<ThrustCurve>` for a synthesized
   neutral, progressive, or regressive curve. These presets describe external
   thrust only; they do not represent propellant chemistry or internal ballistics.
+- `generateGrainThrustCurve({ profile, totalImpulseNs, averageThrustN })` returns
+  `Result<ThrustCurve>` with the same SI convention. `GrainProfileId` accepts
+  `tubular`, `rod-and-tube`, `double-anchor`, `star`, `multi-fin`, and
+  `dual-composition`. `GRAIN_PROFILES` contains the immutable templates and labels;
+  `grainProfileFor(id)` returns the matching definition or `null`.
 - `parseEng(text, sourceName?)` returns `Result<readonly ImportedMotor[]>`.
   Every record is retained; selecting a motor from a multi-record file is the
   future UI's responsibility. Any malformed record rejects the complete import
@@ -103,7 +235,7 @@ Public entry points are exported from `src/index.ts`:
 - `simulateFlight(configuration)` validates input and returns samples, events,
   metrics, status, and diagnostics. Derived curve metadata is recomputed from
   samples, so stale metadata cannot corrupt mass depletion. Caller data is not
-  mutated, and returned data is serializable for a future Web Worker.
+  mutated, and returned data is serializable for the UI's Web Worker.
 - `IMPULSE_CLASSES`, `classifyImpulse`, and `motorDesignation` provide class
   metadata and a computed designation. Imported designations are preserved;
   measured average thrust need not equal the thrust number in a marketed name.
@@ -205,7 +337,7 @@ brief's default, not a measured Big Bertha coefficient; fin/launch-lug drag,
 build weight, launch equipment, actual atmosphere, and motor variation are not
 separately represented. The published maximum is not accompanied by test conditions.
 
-The 180 Vitest cases cover class boundaries, synthesized impulse normalization
+The Vitest cases cover class boundaries, synthesized impulse normalization
 at both ends of every class, source-data parsing and malformed imports, exact
 partial curve integrals, ISA reference values, analytical powered/coasting
 motion, the ideal rocket equation, thrust/impulse tradeoffs, nonlinear mass
@@ -218,6 +350,5 @@ It tolerates one explicit `(0, 0)` origin and more than 32 samples, preserves
 comments and the raw header, and accepts multiple records. It does not fabricate
 a missing terminal zero or silently sort, clamp, or repair invalid thrust data.
 
-Checkpoint 2 stops at these static-reference charts. Checkpoint 3 adds the class
-selector, editable parameters, hold-impulse interaction, and live updating; it has
-not been started.
+The flight lab now includes sourced presets and 3D playback. File import UI,
+performance warnings, ghost comparison, exports, and stability remain deferred.
