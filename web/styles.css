@@ -194,5 +194,113 @@ input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); o
   .jump-to-results { display: inline-flex; align-items: center; min-height: 44px; margin-top: 16px; color: var(--accent); font-size: .875rem; text-decoration: underline; }
 }
 
+/* The launch viewport is the primary working surface; the existing plots remain below. */
+.launch-panel { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); margin: 0 0 28px; }
+.launch-heading { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.eyebrow { font-size: .75rem; font-weight: 600; letter-spacing: .14em; color: var(--muted); }
+.launch-heading h2 { font-size: 1.5rem; font-weight: 500; letter-spacing: -.03em; margin: 4px 0 0; }
+.launch-motor { display: flex; flex-direction: column; gap: 5px; text-align: right; }
+.launch-motor strong { font-size: 1rem; font-weight: 600; }
+.launch-motor span { font-size: .8125rem; color: var(--muted); }
+.launch-viewport { position: relative; height: clamp(390px, 49vw, 540px); background: #c9e2f2; color: #18344c; isolation: isolate; }
+.launch-viewport.night { background: #10233a; color: #ecf4ff; }
+.rocket-scene { position: absolute; inset: 0; }
+.rocket-scene canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.scene-fallback { position: absolute; inset: 0; display: grid; align-content: center; padding: 80px; text-align: center; font-size: 1rem; line-height: 1.6; z-index: 1; background: inherit; }
+.scene-status { position: absolute; top: 22px; left: 24px; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
+.phase-pill { align-self: start; padding: 6px 11px; border: 1px solid #ffffff70; background: #f3f8fccf; color: #243f54; border-radius: 5px; font-size: .8125rem; font-weight: 500; }
+.phase-pill.active { background: #173e62; color: #fff; border-color: #173e62; }
+.scene-clock { font-size: 1.75rem; letter-spacing: -.035em; font-weight: 500; }
+.scene-clock small { font-size: 1rem; }
+.scene-toolbar { position: absolute; top: 18px; right: 18px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; max-width: 50%; }
+.scene-toolbar button { background: #f5f9fddd; color: #213b52; border: 1px solid #ffffff90; border-radius: 5px; min-height: 44px; padding: 7px 12px; font-size: .875rem; }
+.scene-toolbar button[aria-pressed="true"] { background: #213b52; color: #fff; }
+.scene-toolbar button:hover { background: #fff; color: #18344c; }
+.scene-dimensions { position: absolute; bottom: 20px; left: 24px; display: flex; flex-direction: column; gap: 5px; pointer-events: none; padding: 10px 12px; background: #f3f8fce6; border-radius: 5px; color: #213b52; }
+.scene-dimensions strong { font-size: .875rem; font-weight: 600; }
+.scene-dimensions span { font-size: .8125rem; }
+.altitude-tape { position: absolute; right: 22px; top: 100px; bottom: 25px; width: 65px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; font-size: .8125rem; font-weight: 500; }
+.altitude-track { flex: 1; width: 20px; position: relative; border-right: 1px solid currentColor; background: repeating-linear-gradient(to top, transparent 0, transparent calc(10% - 1px), #7896a999 calc(10% - 1px), #7896a999 10%); }
+.altitude-track i { position: absolute; right: -5px; width: 10px; height: 10px; border: 2px solid #fff; background: #ec6535; border-radius: 50%; transform: translateY(50%); }
+.launch-console { padding: 20px 24px 14px; }
+.playback-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 20px; }
+.launch-button { background: #c9461e; border: 1px solid #c9461e; color: #fff; border-radius: 6px; padding: 10px 20px; min-width: 130px; min-height: 46px; font-weight: 600; }
+.launch-button:hover:not(:disabled) { background: #a93716; }
+.replay-button { background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; min-height: 46px; }
+button:disabled, input:disabled { opacity: .5; cursor: not-allowed; }
+.playback-speed { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .875rem; }
+.playback-speed select, .geometry-select select { font: inherit; border: 1px solid var(--line); background: var(--surface); color: var(--text); border-radius: 6px; min-height: 44px; padding: 8px; }
+.burn-summary { margin-left: auto; font-size: .875rem; color: var(--muted); }
+.timeline-heading { display: flex; justify-content: space-between; font-size: .875rem; color: var(--muted); gap: 10px; }
+.launch-timeline { display: block; width: 100%; margin: 3px 0; height: 28px; accent-color: #c9461e; cursor: pointer; }
+.timeline-events { display: flex; justify-content: space-between; gap: 8px; align-items: center; color: var(--muted); font-size: .8125rem; }
+.timeline-events button { border: 0; background: none; color: var(--accent); text-decoration: underline; min-height: 44px; font-size: inherit; }
+.flight-telemetry { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 20px 0 15px; margin: 12px 0 0; border-top: 1px solid var(--line); }
+.flight-telemetry dt { font-size: .875rem; color: var(--muted); margin-bottom: 7px; }
+.flight-telemetry dd { margin: 0; font-size: clamp(1.15rem, 2vw, 1.65rem); letter-spacing: -.03em; overflow-wrap: anywhere; }
+.flight-telemetry dd span { color: var(--muted); font-size: .875rem; letter-spacing: 0; }
+.burn-progress { display: flex; gap: 15px; align-items: center; }
+.burn-progress label { font-size: .8125rem; color: var(--muted); white-space: nowrap; }
+.burn-progress strong { color: var(--text); margin-left: 6px; font-weight: 500; }
+.burn-progress progress { flex: 1; width: 100%; min-width: 20px; height: 5px; appearance: none; border: 0; border-radius: 3px; overflow: hidden; background: var(--line); }
+.burn-progress progress::-webkit-progress-bar { background: var(--line); }
+.burn-progress progress::-webkit-progress-value { background: #e06134; }
+.burn-progress progress::-moz-progress-bar { background: #e06134; }
+.launch-footnote { font-size: .8125rem; line-height: 1.6; color: var(--muted); margin: 15px 0 0; }
+.launch-footnote a { color: var(--accent); }
+.geometry-select { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin: 14px 0; font-size: .875rem; }
+.geometry-notice { margin-top: 16px; border-left: 3px solid #d3772e; padding: 8px 12px; background: var(--page); font-size: .875rem; line-height: 1.5; }
+.geometry-notice p { margin: 5px 0; color: var(--muted); }
+input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 1100px) { .burn-summary { margin-left: 0; flex-basis: 100%; } .launch-heading { align-items: flex-start; } }
+@media (max-width: 600px) {
+  .launch-heading { padding: 16px; flex-direction: column; gap: 12px; }
+  .launch-motor { text-align: left; }
+  .launch-viewport { height: 440px; }
+  .launch-console { padding: 16px; }
+  .scene-status { left: 14px; top: 16px; }
+  .scene-toolbar { top: 14px; right: 12px; flex-direction: column; }
+  .scene-toolbar button { font-size: .8125rem; padding: 7px 9px; }
+  .scene-dimensions { left: 14px; bottom: 15px; max-width: calc(100% - 100px); }
+  .scene-fallback { padding: 110px 45px; }
+  .flight-telemetry { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .playback-speed { flex-wrap: wrap; }
+  .launch-button { min-width: 120px; }
+}
+@media (prefers-reduced-motion: reduce) { .launch-panel *, .launch-panel *::before, .launch-panel *::after { transition: none !important; } }
 .chart-container { position: relative; }
 .playback-chart-cursor { position: absolute; pointer-events: none; z-index: 2; top: 26px; bottom: 30px; left: calc(56px + (100% - 112px) * var(--playback-progress, 0)); width: 0; border-left: 1.5px dashed var(--accent); }
+.jump-to-launch { display: none; }
+.rocket-scene canvas:focus-visible { outline: 3px solid #c9461e; outline-offset: -4px; }
+@media (max-width: 900px) { .jump-to-launch { display: inline-flex; align-items: center; min-height: 44px; margin: -18px 0 18px; color: var(--accent); font-size: .875rem; } }
+/* Altitude is the dominant readout; scenery stays in physical world coordinates. */
+.launch-viewport, .launch-viewport.night { color: #18344c; }
+.scene-status { gap: 7px; max-width: 46%; }
+.scene-height { display: flex; flex-direction: column; font-size: clamp(1.7rem, 3.5vw, 2.5rem); letter-spacing: -.045em; line-height: 1.1; color: #173149; text-shadow: 0 1px 9px #eaf6ffee; }
+.scene-height small { font-size: .8125rem; letter-spacing: 0; font-weight: 500; margin-top: 5px; }
+.scene-clock { padding: 5px 8px; border-radius: 4px; align-self: start; background: #f3f8fce6; color: #213b52; font-size: .8125rem; font-weight: 400; letter-spacing: 0; line-height: 1.5; }
+.scene-toolbar { flex-direction: column; align-items: flex-end; gap: 7px; max-width: 51%; }
+.camera-modes, .scene-options { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+.camera-modes { padding: 3px; border-radius: 7px; background: #f3f8fce6; }
+.camera-modes button { background: transparent; border: 0; min-height: 40px; }
+.camera-modes button[aria-pressed="true"] { background: #213b52; color: #fff; }
+.scene-options button { font-size: .8125rem; min-height: 38px; }
+.altitude-tape { top: 156px; right: 20px; text-shadow: 0 1px 5px #eaf6ff; }
+.altitude-tick { position: absolute; right: 25px; white-space: nowrap; font-size: .75rem; transform: translateY(50%); }
+.scene-dimensions { gap: 4px; max-width: calc(100% - 115px); }
+.scene-dimensions strong:nth-of-type(2) { font-weight: 500; margin-top: 5px; }
+.scenery-note { margin: 14px 0 0; color: var(--muted); font-size: .8125rem; line-height: 1.6; }
+.scenery-note a { color: var(--accent); }
+@media (max-width: 600px) {
+  .launch-viewport { height: 510px; }
+  .scene-status { max-width: 46%; }
+  .scene-height { font-size: 1.65rem; }
+  .scene-toolbar { right: 10px; max-width: 48%; }
+  .camera-modes { flex-direction: column; gap: 2px; }
+  .camera-modes button, .scene-options button { min-height: 44px; font-size: .75rem; }
+  .scene-options { flex-direction: column; gap: 4px; }
+  .altitude-tape { top: 235px; bottom: 150px; }
+  .altitude-tick { font-size: .75rem; }
+  .scene-dimensions { bottom: 12px; max-width: calc(100% - 28px); }
+}
+.launch-viewport.space-view .scene-height, .launch-viewport.space-view .altitude-tape { color: #f0f6ff; text-shadow: 0 1px 5px #041222; }

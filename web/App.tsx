@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from 'zustand';
 import { Controls } from './Controls.js';
+import { LaunchView } from './LaunchView.js';
 import { usePlayback } from './use-playback.js';
 import { FlightCharts } from './FlightCharts.js';
 import { labStore } from './reference.js';
@@ -31,6 +32,7 @@ export function App() {
         <div className="analysis-heading"><div><h1>Build it. Launch it. Explore the flight.</h1><p>{view ? `${view.motor.designation} on a ${number(view.airframe.dryMassKg * 1000)} g airframe` : 'Choose a class and adjust the controls to explore a flight.'}</p></div><span className="unit-label">Metric units</span></div>
         <div className="calculation-status" role="status" aria-live="polite">{pending ? (view ? 'Updating flight… Showing the previous result until the new flight is ready.' : 'Calculating your flight…') : error ? 'Calculation unavailable' : 'Flight updated · adjust any control to recalculate'}</div>
         {error && !pending && <div className="result-notice" role="alert"><strong>The flight could not be calculated</strong><p>{error}</p><button className="text-button" onClick={() => setRetry(value => value + 1)}>Retry calculation</button></div>}
+        <LaunchView configuration={configuration} view={view} pending={pending} dark={dark} playback={playback} />
         {view && <div aria-busy={pending}>
           {view.flight.status !== 'apogee' && <div className="result-notice">
             <strong>{view.flight.status === 'no-liftoff' ? 'No liftoff' : view.flight.status === 'simulation-limit' ? 'Partial flight result' : 'Check this configuration'}</strong>
